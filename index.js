@@ -34,7 +34,8 @@ app.get('/audius-search', async (req, res) => {
             const title = (track.title || '').toLowerCase();
             const genre = (track.genre || '').toLowerCase();
             const desc = (track.description || '').toLowerCase();
-            const tags = (track.tags || []).join(',').toLowerCase();
+            const tagsArray = Array.isArray(track.tags) ? track.tags : [];
+            const tags = tagsArray.join(',').toLowerCase();
 
             const query = artist.toLowerCase();
 
