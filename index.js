@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors()); // allow all origins
+app.use(cors());
 console.log("🚀 Script started");
 
 app.get('/audius-search', async (req, res) => {
@@ -18,11 +18,21 @@ app.get('/audius-search', async (req, res) => {
     }
 
     try {
-        const response = await axios.get(`https://discoveryprovider.audius.co/v1/users/search?query=${artist}`);
+        const response = await axios.get(`https://discoveryprovider.audius.co/v1/tracks/search`, {
+            params: {
+                query: artist,
+                limit: 100 // Get more and slice manually below
+            }
+        });
+
         const fullResults = response.data?.data || [];
 
-        // Apply offset + limit slicing
-        const paginated = fullResults.slice(offset, offset + limit);
+        // Optional: Filter tracks where artist name matches
+        const filtered = fullResults.filter(track =>
+            track.user?.name?.toLowerCase().includes(artist.toLowerCase())
+        );
+
+        const paginated = filtered.slice(offset, offset + limit);
 
         res.json({ data: paginated });
 
