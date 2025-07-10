@@ -30,20 +30,23 @@ app.get('/audius-search', async (req, res) => {
         // ✅ Improved filtering: match artist in title or uploader name
         const artistLower = artist.toLowerCase();
         const filtered = fullResults.filter(track => {
-            const title = track.title?.toLowerCase() || '';
-            const artistName = track.user?.name?.toLowerCase() || '';
-            const genre = track.genre?.toLowerCase() || '';
-            const description = track.description?.toLowerCase() || '';
-            const tags = (track.tags || []).join(' ').toLowerCase();
+            const artistName = (track.user?.name || '').toLowerCase();
+            const title = (track.title || '').toLowerCase();
+            const genre = (track.genre || '').toLowerCase();
+            const desc = (track.description || '').toLowerCase();
+            const tags = (track.tags || []).join(',').toLowerCase();
+
+            const query = artist.toLowerCase();
 
             return (
-                title.includes(artistLower) ||
-                artistName.includes(artistLower) ||
-                genre.includes(artistLower) ||
-                description.includes(artistLower) ||
-                tags.includes(artistLower)
+                artistName.includes(query) ||
+                title.includes(query) ||
+                genre.includes(query) ||
+                desc.includes(query) ||
+                tags.includes(query)
             );
         });
+
 
 
         const paginated = filtered.slice(offset, offset + limit);
