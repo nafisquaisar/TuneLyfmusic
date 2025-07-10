@@ -21,15 +21,17 @@ app.get('/audius-search', async (req, res) => {
         const response = await axios.get(`https://discoveryprovider.audius.co/v1/tracks/search`, {
             params: {
                 query: artist,
-                limit: 100 // Get more and slice manually below
+                limit: 100
             }
         });
 
         const fullResults = response.data?.data || [];
 
-        // Optional: Filter tracks where artist name matches
+        // ✅ Improved filtering: match artist in title or uploader name
+        const artistLower = artist.toLowerCase();
         const filtered = fullResults.filter(track =>
-            track.user?.name?.toLowerCase().includes(artist.toLowerCase())
+            track.title?.toLowerCase().includes(artistLower) ||
+            track.user?.name?.toLowerCase().includes(artistLower)
         );
 
         const paginated = filtered.slice(offset, offset + limit);
@@ -60,8 +62,8 @@ app.get('/audius-stream', async (req, res) => {
 
     try {
         const response = await axios.get(`https://discoveryprovider.audius.co/v1/tracks/${trackId}/stream`, {
-            maxRedirects: 0, // Don't follow redirects, we want the redirect URL
-            validateStatus: (status) => status >= 200 && status < 400 // Allow 302
+            maxRedirects: 0,
+            validateStatus: (status) => status >= 200 && status < 400
         });
 
         const redirectUrl = response.headers.location;
@@ -77,7 +79,6 @@ app.get('/audius-stream', async (req, res) => {
         res.status(500).json({ error: 'Failed to get stream URL' });
     }
 });
-
 
 app.listen(PORT, () => {
     console.log(`✅ Proxy Server running on http://localhost:${PORT}`);
