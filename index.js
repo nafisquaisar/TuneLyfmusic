@@ -51,6 +51,34 @@ app.get('/audius-search', async (req, res) => {
     }
 });
 
+app.get('/audius-stream', async (req, res) => {
+    const trackId = req.query.trackId;
+
+    if (!trackId) {
+        return res.status(400).json({ error: 'trackId is required' });
+    }
+
+    try {
+        const response = await axios.get(`https://discoveryprovider.audius.co/v1/tracks/${trackId}/stream`, {
+            maxRedirects: 0, // Don't follow redirects, we want the redirect URL
+            validateStatus: (status) => status >= 200 && status < 400 // Allow 302
+        });
+
+        const redirectUrl = response.headers.location;
+
+        if (redirectUrl) {
+            res.json({ streamUrl: redirectUrl });
+        } else {
+            res.status(500).json({ error: 'Stream URL not found' });
+        }
+
+    } catch (error) {
+        console.error("❌ Error getting stream URL:", error.message);
+        res.status(500).json({ error: 'Failed to get stream URL' });
+    }
+});
+
+
 app.listen(PORT, () => {
     console.log(`✅ Proxy Server running on http://localhost:${PORT}`);
 });
