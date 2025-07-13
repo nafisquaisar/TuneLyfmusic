@@ -18,12 +18,14 @@ app.get('/audius-search', async (req, res) => {
     }
 
     try {
-        const response = await axios.get(`https://discoveryprovider.audius.co/v1/tracks/search`, {
-            params: {
-                query: artist,
-                limit: 100
-            }
-        });
+          const response = await axios.get(`https://discoveryprovider.audius.co/v1/tracks/${trackId}/stream`, {
+    maxRedirects: 0,
+    validateStatus: (status) => status >= 200 && status < 400,
+    headers: {
+        'User-Agent': 'TuneLyfApp/1.0 (dev build)'
+    }
+});
+
 
         const fullResults = response.data?.data || [];
 
