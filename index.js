@@ -101,6 +101,33 @@ app.get('/audius-stream', async (req, res) => {
     }
 });
 
+
+app.get('/audius-trending', async (req, res) => {
+    const limit = parseInt(req.query.limit || '20');
+
+    try {
+        const response = await axios.get(
+            'https://discoveryprovider.audius.co/v1/tracks/trending',
+            {
+                params: {
+                    limit,
+                    time: 'week'
+                },
+                headers: {
+                    'User-Agent': 'TuneLyfApp/1.0 (dev build)'
+                }
+            }
+        );
+
+        res.json({ data: response.data?.data || [] });
+
+    } catch (error) {
+        console.error('❌ Trending fetch failed:', error.message);
+        res.status(500).json({ error: 'Failed to fetch trending tracks' });
+    }
+});
+
+
 app.listen(PORT, () => {
     console.log(`✅ Proxy Server running on http://localhost:${PORT}`);
 });
