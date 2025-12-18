@@ -140,6 +140,44 @@ app.get('/audius-trending', async (req, res) => {
 
 
 
+app.get('/audius-new', async (req, res) => {
+    const limit = parseInt(req.query.limit || '20');
+
+    try {
+        const response = await axios.get(
+            'https://discoveryprovider.audius.co/v1/tracks/search',
+            {
+                params: {
+                    query: 'music',     // generic keyword
+                    sort: 'recent',
+                    limit: limit * 2    // buffer for filtering
+                },
+                headers: {
+                    'User-Agent': 'TuneLyfApp/1.0'
+                }
+            }
+        );
+
+        const raw = response.data?.data || [];
+
+        // ✅ FILTER: only playable tracks
+        const playable = raw.filter(track =>
+            track.is_streamable === true &&
+            track.is_delete === false
+        );
+
+        res.json({
+            data: playable.slice(0, limit)
+        });
+
+    } catch (error) {
+        console.error('❌ New uploads fetch failed:', error.message);
+        res.status(500).json({ error: 'Failed to fetch new uploads' });
+    }
+});
+
+
+
 app.listen(PORT, () => {
     console.log(`✅ Proxy Server running on http://localhost:${PORT}`);
 });
