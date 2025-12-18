@@ -110,22 +110,34 @@ app.get('/audius-trending', async (req, res) => {
             'https://discoveryprovider.audius.co/v1/tracks/trending',
             {
                 params: {
-                    limit,
+                    limit: limit * 2, // 👈 buffer for filtering
                     time: 'week'
                 },
                 headers: {
-                    'User-Agent': 'TuneLyfApp/1.0 (dev build)'
+                    'User-Agent': 'TuneLyfApp/1.0'
                 }
             }
         );
 
-        res.json({ data: response.data?.data || [] });
+        const raw = response.data?.data || [];
 
-    } catch (error) {
-        console.error('❌ Trending fetch failed:', error.message);
-        res.status(500).json({ error: 'Failed to fetch trending tracks' });
+        // ✅ FILTER NON-STREAMABLE
+        const streamable = raw.filter(track =>
+            track.is_streamable === true &&
+            track.is_delete === false
+        );
+
+        // ✅ RETURN ONLY REQUIRED COUNT
+        res.json({
+            data: streamable.slice(0, limit)
+        });
+
+    } catch (err) {
+        console.error('❌ Trending fetch failed:', err.message);
+        res.status(500).json({ error: 'Trending fetch failed' });
     }
 });
+
 
 
 app.listen(PORT, () => {
